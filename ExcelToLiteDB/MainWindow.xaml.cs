@@ -22,6 +22,9 @@ namespace ExcelToLiteDB
 
         private void BtnRun_OnClick(object sender, RoutedEventArgs e)
         {
+
+            
+
             try
             {
                 // Check if user entered database name
@@ -47,15 +50,18 @@ namespace ExcelToLiteDB
                 // Open dialog and ask about database folder location
                 FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog();
                 folderBrowserDialog.Description = "Please select save location";
+                // Show a message that confirms converting process is started
+                ShowMessage(Brushes.Black, "Please wait...");
                 var result = folderBrowserDialog.ShowDialog();
                 if (result == System.Windows.Forms.DialogResult.OK)
                 {
-                    // Show a message that confirms converting process is started
-                    ShowMessage(Brushes.Black, "Please wait...");
+
 
                     //Create a connection string based on database location and password
                     string saveLocation = Path.Combine(folderBrowserDialog.SelectedPath, dataBaseName);
                     string connectionString = $"Filename={saveLocation};Password={password}";
+
+                    
 
                     // Use connectionString to Create a database
                     var db = new LiteDatabase(connectionString);
@@ -80,7 +86,9 @@ namespace ExcelToLiteDB
                         List<string> cells = new List<string>();
                         for (int j = 2; j <= rows; j++)
                         {
-                            cells.Add(excelRange.Cells[j, i].Value2.ToString());
+
+                            if ((excelRange.Cells[j, i].Value2) != null)
+                                cells.Add(excelRange.Cells[j, i].Value2.ToString());
                         }
 
                         //  determine type of a column based on the "cells" and add it to the "types"
@@ -100,7 +108,8 @@ namespace ExcelToLiteDB
                         {
                             string type = types[j - 1];
                             string columnName = excelRange.Cells[1, j].Value2.ToString();
-                            bson.Add(columnName, TypeConvertor(type, excelRange.Cells[i, j].Value2.ToString()));
+                            if (excelRange.Cells[i, j].Value2 != null)
+                                bson.Add(columnName, TypeConvertor(type, excelRange.Cells[i, j].Value2.ToString()));
 
                         }
 
@@ -113,15 +122,18 @@ namespace ExcelToLiteDB
                     db.Dispose();
                     ShowMessage(Brushes.DarkGreen, "Database successfully created in " + folderBrowserDialog.SelectedPath);
                 }
-
-
+                else
+                {
+                    
+                    ShowMessage(Brushes.Black, "");
+                }
             }
             catch (Exception exception)
             {
                 ShowMessage(Brushes.DarkRed, "Error: " + exception.Message);
             }
 
-            
+
 
         }
 
